@@ -277,7 +277,7 @@
             this.groupBox3.Size = new System.Drawing.Size(776, 550);
             this.groupBox3.TabIndex = 2;
             this.groupBox3.TabStop = false;
-            this.groupBox3.Text = "接收数据";
+            this.groupBox3.Text = "消息面板";
 
             // 
             // btnClearReceived
