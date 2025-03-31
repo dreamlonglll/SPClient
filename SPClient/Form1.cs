@@ -22,6 +22,8 @@ namespace SPClient
             InitializeSerialPorts();
             InitializeBaudRates();
             InitializeDataBits();
+            InitializeParities();
+            InitializeStopBits();
         }
 
         private void InitializeSerialPorts()
@@ -56,6 +58,26 @@ namespace SPClient
             }
             cbDataBits.SelectedIndex = 3; // 默认选择8位
         }
+        
+        private void InitializeParities()
+        {
+            cbParity.Items.Clear();
+            cbParity.Items.Add("None");
+            cbParity.Items.Add("Odd");
+            cbParity.Items.Add("Even");
+            cbParity.Items.Add("Mark");
+            cbParity.Items.Add("Space");
+            cbParity.SelectedIndex = 0; // 默认选择None
+        }
+        
+        private void InitializeStopBits()
+        {
+            cbStopBits.Items.Clear();
+            cbStopBits.Items.Add("1");
+            cbStopBits.Items.Add("1.5");
+            cbStopBits.Items.Add("2");
+            cbStopBits.SelectedIndex = 0; // 默认选择1
+        }
 
         private void btnOpenClose_Click(object sender, EventArgs e)
         {
@@ -68,8 +90,26 @@ namespace SPClient
                     serialPort.PortName = cbPortName.Text;
                     serialPort.BaudRate = Convert.ToInt32(cbBaudRate.Text);
                     serialPort.DataBits = Convert.ToInt32(cbDataBits.Text);
-                    serialPort.Parity = Parity.None;
-                    serialPort.StopBits = StopBits.One;
+                    
+                    // 配置校验位
+                    switch (cbParity.SelectedIndex)
+                    {
+                        case 0: serialPort.Parity = Parity.None; break;
+                        case 1: serialPort.Parity = Parity.Odd; break;
+                        case 2: serialPort.Parity = Parity.Even; break;
+                        case 3: serialPort.Parity = Parity.Mark; break;
+                        case 4: serialPort.Parity = Parity.Space; break;
+                        default: serialPort.Parity = Parity.None; break;
+                    }
+                    
+                    // 配置停止位
+                    switch (cbStopBits.SelectedIndex)
+                    {
+                        case 0: serialPort.StopBits = StopBits.One; break;
+                        case 1: serialPort.StopBits = StopBits.OnePointFive; break;
+                        case 2: serialPort.StopBits = StopBits.Two; break;
+                        default: serialPort.StopBits = StopBits.One; break;
+                    }
                     
                     // 注册数据接收事件
                     serialPort.DataReceived += SerialPort_DataReceived;
@@ -83,6 +123,8 @@ namespace SPClient
                     cbPortName.Enabled = false;
                     cbBaudRate.Enabled = false;
                     cbDataBits.Enabled = false;
+                    cbParity.Enabled = false;
+                    cbStopBits.Enabled = false;
                 }
                 catch (Exception ex)
                 {
@@ -104,6 +146,8 @@ namespace SPClient
                     cbPortName.Enabled = true;
                     cbBaudRate.Enabled = true;
                     cbDataBits.Enabled = true;
+                    cbParity.Enabled = true;
+                    cbStopBits.Enabled = true;
                 }
                 catch (Exception ex)
                 {
@@ -167,22 +211,51 @@ namespace SPClient
                     data[i] = Convert.ToByte(hexValues[i], 16);
                 }
 
+                // 准备要发送的数据
+                byte[] dataToSend;
+                byte[] endBytes = GetEndBytes();
+                
                 // 检查是否需要添加CRC校验
                 if (chkAddCRC.Checked)
                 {
                     byte[] dataWithCRC = AddModbusCRC(data);
-                    serialPort.Write(dataWithCRC, 0, dataWithCRC.Length);
+                    
+                    // 添加终止符（如果需要）
+                    if (endBytes != null && endBytes.Length > 0)
+                    {
+                        dataToSend = new byte[dataWithCRC.Length + endBytes.Length];
+                        Array.Copy(dataWithCRC, 0, dataToSend, 0, dataWithCRC.Length);
+                        Array.Copy(endBytes, 0, dataToSend, dataWithCRC.Length, endBytes.Length);
+                    }
+                    else
+                    {
+                        dataToSend = dataWithCRC;
+                    }
+                    
+                    serialPort.Write(dataToSend, 0, dataToSend.Length);
                     
                     // 显示带CRC的完整数据
-                    string sentData = BitConverter.ToString(dataWithCRC).Replace("-", " ");
+                    string sentData = BitConverter.ToString(dataToSend).Replace("-", " ");
                     txtReceived.AppendText("发送: " + sentData + Environment.NewLine);
                 }
                 else
                 {
-                    serialPort.Write(data, 0, data.Length);
+                    // 添加终止符（如果需要）
+                    if (endBytes != null && endBytes.Length > 0)
+                    {
+                        dataToSend = new byte[data.Length + endBytes.Length];
+                        Array.Copy(data, 0, dataToSend, 0, data.Length);
+                        Array.Copy(endBytes, 0, dataToSend, data.Length, endBytes.Length);
+                    }
+                    else
+                    {
+                        dataToSend = data;
+                    }
+                    
+                    serialPort.Write(dataToSend, 0, dataToSend.Length);
                     
                     // 显示发送的数据
-                    string sentData = BitConverter.ToString(data).Replace("-", " ");
+                    string sentData = BitConverter.ToString(dataToSend).Replace("-", " ");
                     txtReceived.AppendText("发送: " + sentData + Environment.NewLine);
                 }
             }
@@ -190,6 +263,24 @@ namespace SPClient
             {
                 MessageBox.Show("发送数据错误: " + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+        
+        private byte[] GetEndBytes()
+        {
+            if (chkAddLF.Checked && chkAddCR.Checked)
+            {
+                return new byte[] { 0x0D, 0x0A }; // \r\n
+            }
+            else if (chkAddLF.Checked)
+            {
+                return new byte[] { 0x0A }; // \n
+            }
+            else if (chkAddCR.Checked)
+            {
+                return new byte[] { 0x0D }; // \r
+            }
+            
+            return null;
         }
 
         private byte[] AddModbusCRC(byte[] data)
