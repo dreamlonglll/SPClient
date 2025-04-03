@@ -73,7 +73,7 @@
             this.groupBox1.Controls.Add(this.btnOpenClose);
             this.groupBox1.Location = new System.Drawing.Point(12, 12);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(776, 86);
+            this.groupBox1.Size = new System.Drawing.Size(1241, 86);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "串口设置";
@@ -192,7 +192,7 @@
             // 
             // btnOpenClose
             // 
-            this.btnOpenClose.Location = new System.Drawing.Point(650, 22);
+            this.btnOpenClose.Location = new System.Drawing.Point(1115, 24);
             this.btnOpenClose.Name = "btnOpenClose";
             this.btnOpenClose.Size = new System.Drawing.Size(120, 50);
             this.btnOpenClose.TabIndex = 0;
@@ -212,7 +212,7 @@
             this.groupBox2.Controls.Add(this.txtSend);
             this.groupBox2.Location = new System.Drawing.Point(12, 104);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(776, 140);
+            this.groupBox2.Size = new System.Drawing.Size(1241, 140);
             this.groupBox2.TabIndex = 1;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "发送数据";
@@ -256,7 +256,7 @@
             this.chkAsciiSend.AutoSize = true;
             this.chkAsciiSend.Location = new System.Drawing.Point(470, 107);
             this.chkAsciiSend.Name = "chkAsciiSend";
-            this.chkAsciiSend.Size = new System.Drawing.Size(122, 24);
+            this.chkAsciiSend.Size = new System.Drawing.Size(99, 24);
             this.chkAsciiSend.TabIndex = 5;
             this.chkAsciiSend.Text = "ASCII发送";
             this.chkAsciiSend.UseVisualStyleBackColor = true;
@@ -268,7 +268,7 @@
             this.chkAsciiReceive.AutoSize = true;
             this.chkAsciiReceive.Location = new System.Drawing.Point(598, 107);
             this.chkAsciiReceive.Name = "chkAsciiReceive";
-            this.chkAsciiReceive.Size = new System.Drawing.Size(122, 24);
+            this.chkAsciiReceive.Size = new System.Drawing.Size(99, 24);
             this.chkAsciiReceive.TabIndex = 6;
             this.chkAsciiReceive.Text = "ASCII接收";
             this.chkAsciiReceive.UseVisualStyleBackColor = true;
@@ -277,7 +277,7 @@
             // 
             // btnSend
             // 
-            this.btnSend.Location = new System.Drawing.Point(650, 21);
+            this.btnSend.Location = new System.Drawing.Point(1115, 21);
             this.btnSend.Name = "btnSend";
             this.btnSend.Size = new System.Drawing.Size(120, 50);
             this.btnSend.TabIndex = 1;
@@ -292,7 +292,7 @@
             this.txtSend.Location = new System.Drawing.Point(6, 21);
             this.txtSend.Multiline = true;
             this.txtSend.Name = "txtSend";
-            this.txtSend.Size = new System.Drawing.Size(638, 80);
+            this.txtSend.Size = new System.Drawing.Size(1103, 80);
             this.txtSend.TabIndex = 0;
 
             // 
@@ -302,7 +302,7 @@
             this.groupBox3.Controls.Add(this.txtReceived);
             this.groupBox3.Location = new System.Drawing.Point(12, 250);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(776, 550);
+            this.groupBox3.Size = new System.Drawing.Size(1241, 795);
             this.groupBox3.TabIndex = 2;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "消息面板";
@@ -310,7 +310,7 @@
             // 
             // btnClearReceived
             // 
-            this.btnClearReceived.Location = new System.Drawing.Point(650, 22);
+            this.btnClearReceived.Location = new System.Drawing.Point(1115, 26);
             this.btnClearReceived.Name = "btnClearReceived";
             this.btnClearReceived.Size = new System.Drawing.Size(120, 50);
             this.btnClearReceived.TabIndex = 1;
@@ -327,7 +327,7 @@
             this.txtReceived.Name = "txtReceived";
             this.txtReceived.ReadOnly = true;
             this.txtReceived.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtReceived.Size = new System.Drawing.Size(638, 522);
+            this.txtReceived.Size = new System.Drawing.Size(1103, 981);
             this.txtReceived.TabIndex = 0;
 
             // 
@@ -335,7 +335,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 812);
+            this.ClientSize = new System.Drawing.Size(1265, 1265);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);

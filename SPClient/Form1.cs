@@ -428,7 +428,7 @@ namespace SPClient
             }
             catch (Exception ex)
             {
-                MessageBox.Show("发送数据错误: " + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("发送数据错误: 请检查十六进制数据是否正确，是否存在连续空格" , "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
