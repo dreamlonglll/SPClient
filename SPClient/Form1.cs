@@ -16,7 +16,8 @@ namespace SPClient
     {
         private SerialPort serialPort;
         private bool isPortOpen = false;
-        private bool isAsciiMode = false; // 添加ASCII模式标志
+        private bool isAsciiSend = false; // ASCII发送模式
+        private bool isAsciiReceive = false; // ASCII接收模式
         private List<byte> receiveBuffer = new List<byte>(); // 接收缓冲区
         private System.Timers.Timer packetTimer; // 数据包超时定时器
         private const int PACKET_TIMEOUT = 50; // 包超时时间（毫秒）
@@ -31,7 +32,8 @@ namespace SPClient
             InitializeStopBits();
 
             // 默认为十六进制模式
-            isAsciiMode = false;
+            isAsciiSend = false;
+            isAsciiReceive = false;
 
             // 初始化数据包超时定时器
             packetTimer = new System.Timers.Timer();
@@ -297,7 +299,7 @@ namespace SPClient
             {
                 string displayText;
                 
-                if (isAsciiMode)
+                if (isAsciiReceive)
                 {
                     // ASCII模式 - 转换为ASCII文本
                     displayText = Encoding.ASCII.GetString(packetData);
@@ -335,7 +337,7 @@ namespace SPClient
 
                 byte[] data;
                 
-                if (isAsciiMode)
+                if (isAsciiSend)
                 {
                     // ASCII模式 - 直接将输入文本转换为ASCII字节
                     data = Encoding.ASCII.GetBytes(inputText);
@@ -348,6 +350,14 @@ namespace SPClient
 
                     for (int i = 0; i < hexValues.Length; i++)
                     {
+                        if(hexValues[i].Length>1){
+                            //清理空字符
+                            hexValues[i] = hexValues[i].Trim();
+                            //去掉换行符
+                            hexValues[i] = hexValues[i].Replace("\r", "");
+                            hexValues[i] = hexValues[i].Replace("\n", "");
+
+                        }
                         data[i] = Convert.ToByte(hexValues[i], 16);
                     }
                 }
@@ -377,7 +387,7 @@ namespace SPClient
 
                     // 显示发送的数据
                     string sentData;
-                    if (isAsciiMode)
+                    if (isAsciiReceive) // 使用接收模式的显示格式来显示发送数据
                     {
                         sentData = Encoding.ASCII.GetString(dataToSend);
                     }
@@ -405,7 +415,7 @@ namespace SPClient
 
                     // 显示发送的数据
                     string sentData;
-                    if (isAsciiMode)
+                    if (isAsciiReceive) // 使用接收模式的显示格式来显示发送数据
                     {
                         sentData = Encoding.ASCII.GetString(dataToSend);
                     }
@@ -493,21 +503,27 @@ namespace SPClient
             }
         }
 
-        // 切换ASCII模式和十六进制模式
-        private void chkAsciiMode_CheckedChanged(object sender, EventArgs e)
+        // 切换ASCII发送模式
+        private void chkAsciiSend_CheckedChanged(object sender, EventArgs e)
         {
-            isAsciiMode = chkAsciiMode.Checked;
+            isAsciiSend = chkAsciiSend.Checked;
             
-            if (isAsciiMode)
+            if (isAsciiSend)
             {
                 // ASCII模式提示
-                MessageBox.Show("已切换到ASCII模式，请直接输入ASCII文本", "模式切换", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("已切换到ASCII发送模式，请直接输入ASCII文本", "模式切换", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else
             {
                 // 十六进制模式提示
-                MessageBox.Show("已切换到十六进制模式，请输入十六进制数据，以空格分隔 (例如: 01 02 03)", "模式切换", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("已切换到十六进制发送模式，请输入十六进制数据，以空格分隔 (例如: 01 02 03)", "模式切换", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
+        }
+        
+        // 切换ASCII接收模式
+        private void chkAsciiReceive_CheckedChanged(object sender, EventArgs e)
+        {
+            isAsciiReceive = chkAsciiReceive.Checked;
         }
     }
 }

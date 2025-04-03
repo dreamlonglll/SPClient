@@ -44,7 +44,8 @@
             this.chkAddLF = new System.Windows.Forms.CheckBox();
             this.chkAddCR = new System.Windows.Forms.CheckBox();
             this.chkAddCRC = new System.Windows.Forms.CheckBox();
-            this.chkAsciiMode = new System.Windows.Forms.CheckBox();
+            this.chkAsciiSend = new System.Windows.Forms.CheckBox();
+            this.chkAsciiReceive = new System.Windows.Forms.CheckBox();
             this.btnSend = new System.Windows.Forms.Button();
             this.txtSend = new System.Windows.Forms.TextBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
@@ -205,7 +206,8 @@
             this.groupBox2.Controls.Add(this.chkAddLF);
             this.groupBox2.Controls.Add(this.chkAddCR);
             this.groupBox2.Controls.Add(this.chkAddCRC);
-            this.groupBox2.Controls.Add(this.chkAsciiMode);
+            this.groupBox2.Controls.Add(this.chkAsciiSend);
+            this.groupBox2.Controls.Add(this.chkAsciiReceive);
             this.groupBox2.Controls.Add(this.btnSend);
             this.groupBox2.Controls.Add(this.txtSend);
             this.groupBox2.Location = new System.Drawing.Point(12, 104);
@@ -249,16 +251,28 @@
             this.chkAddCRC.UseVisualStyleBackColor = true;
 
             // 
-            // chkAsciiMode
+            // chkAsciiSend
             // 
-            this.chkAsciiMode.AutoSize = true;
-            this.chkAsciiMode.Location = new System.Drawing.Point(470, 107);
-            this.chkAsciiMode.Name = "chkAsciiMode";
-            this.chkAsciiMode.Size = new System.Drawing.Size(146, 24);
-            this.chkAsciiMode.TabIndex = 5;
-            this.chkAsciiMode.Text = "ASCII 模式收发";
-            this.chkAsciiMode.UseVisualStyleBackColor = true;
-            this.chkAsciiMode.CheckedChanged += new System.EventHandler(this.chkAsciiMode_CheckedChanged);
+            this.chkAsciiSend.AutoSize = true;
+            this.chkAsciiSend.Location = new System.Drawing.Point(470, 107);
+            this.chkAsciiSend.Name = "chkAsciiSend";
+            this.chkAsciiSend.Size = new System.Drawing.Size(122, 24);
+            this.chkAsciiSend.TabIndex = 5;
+            this.chkAsciiSend.Text = "ASCII发送";
+            this.chkAsciiSend.UseVisualStyleBackColor = true;
+            this.chkAsciiSend.CheckedChanged += new System.EventHandler(this.chkAsciiSend_CheckedChanged);
+
+            // 
+            // chkAsciiReceive
+            // 
+            this.chkAsciiReceive.AutoSize = true;
+            this.chkAsciiReceive.Location = new System.Drawing.Point(598, 107);
+            this.chkAsciiReceive.Name = "chkAsciiReceive";
+            this.chkAsciiReceive.Size = new System.Drawing.Size(122, 24);
+            this.chkAsciiReceive.TabIndex = 6;
+            this.chkAsciiReceive.Text = "ASCII接收";
+            this.chkAsciiReceive.UseVisualStyleBackColor = true;
+            this.chkAsciiReceive.CheckedChanged += new System.EventHandler(this.chkAsciiReceive_CheckedChanged);
 
             // 
             // btnSend
@@ -365,6 +379,7 @@
         private System.Windows.Forms.ComboBox cbStopBits;
         private System.Windows.Forms.CheckBox chkAddLF;
         private System.Windows.Forms.CheckBox chkAddCR;
-        private System.Windows.Forms.CheckBox chkAsciiMode;
+        private System.Windows.Forms.CheckBox chkAsciiSend;
+        private System.Windows.Forms.CheckBox chkAsciiReceive;
     }
 }
