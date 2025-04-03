@@ -40,6 +40,9 @@ namespace SPClient
             packetTimer.Interval = PACKET_TIMEOUT;
             packetTimer.AutoReset = false;
             packetTimer.Elapsed += PacketTimer_Elapsed;
+            
+            // 初始化窗体布局
+            this.Load += (s, e) => Form1_Resize(this, EventArgs.Empty);
         }
 
         // 串口信息类
@@ -501,6 +504,37 @@ namespace SPClient
                 serialPort.Close();
                 serialPort.Dispose();
             }
+        }
+
+        // 处理窗体大小变化的事件
+        private void Form1_Resize(object sender, EventArgs e)
+        {
+            // 调整控件尺寸以适应窗体大小
+            // 获取窗体的工作区域宽度
+            int formWidth = this.ClientSize.Width;
+            int formHeight = this.ClientSize.Height;
+            
+            // 调整分组框的宽度
+            groupBox1.Width = formWidth - 24; // 左右各留12像素边距
+            groupBox2.Width = formWidth - 24;
+            groupBox3.Width = formWidth - 24;
+            
+            // 调整txtSend输入框的宽度
+            txtSend.Width = groupBox2.Width - 138; // 保留发送按钮和左右边距
+            
+            // 调整txtReceived的宽度和高度
+            txtReceived.Width = groupBox3.Width - 138; // 保留清除按钮和左右边距
+            
+            // 调整groupBox3(消息面板)的高度
+            groupBox3.Height = formHeight - groupBox1.Height - groupBox2.Height - 48; // 减去其他控件高度和间距
+            
+            // 调整txtReceived的高度
+            txtReceived.Height = groupBox3.Height - 41; // 减去groupBox标题和边距
+            
+            // 调整按钮位置
+            btnOpenClose.Left = groupBox1.Width - btnOpenClose.Width - 6;
+            btnSend.Left = groupBox2.Width - btnSend.Width - 6;
+            btnClearReceived.Left = groupBox3.Width - btnClearReceived.Width - 6;
         }
 
         // 切换ASCII发送模式
