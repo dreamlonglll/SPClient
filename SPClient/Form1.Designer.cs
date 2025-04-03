@@ -44,6 +44,7 @@
             this.chkAddLF = new System.Windows.Forms.CheckBox();
             this.chkAddCR = new System.Windows.Forms.CheckBox();
             this.chkAddCRC = new System.Windows.Forms.CheckBox();
+            this.chkAsciiMode = new System.Windows.Forms.CheckBox();
             this.btnSend = new System.Windows.Forms.Button();
             this.txtSend = new System.Windows.Forms.TextBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
@@ -204,6 +205,7 @@
             this.groupBox2.Controls.Add(this.chkAddLF);
             this.groupBox2.Controls.Add(this.chkAddCR);
             this.groupBox2.Controls.Add(this.chkAddCRC);
+            this.groupBox2.Controls.Add(this.chkAsciiMode);
             this.groupBox2.Controls.Add(this.btnSend);
             this.groupBox2.Controls.Add(this.txtSend);
             this.groupBox2.Location = new System.Drawing.Point(12, 104);
@@ -245,6 +247,18 @@
             this.chkAddCRC.TabIndex = 2;
             this.chkAddCRC.Text = "追加CRC-Modbus校验";
             this.chkAddCRC.UseVisualStyleBackColor = true;
+
+            // 
+            // chkAsciiMode
+            // 
+            this.chkAsciiMode.AutoSize = true;
+            this.chkAsciiMode.Location = new System.Drawing.Point(470, 107);
+            this.chkAsciiMode.Name = "chkAsciiMode";
+            this.chkAsciiMode.Size = new System.Drawing.Size(146, 24);
+            this.chkAsciiMode.TabIndex = 5;
+            this.chkAsciiMode.Text = "ASCII 模式收发";
+            this.chkAsciiMode.UseVisualStyleBackColor = true;
+            this.chkAsciiMode.CheckedChanged += new System.EventHandler(this.chkAsciiMode_CheckedChanged);
 
             // 
             // btnSend
@@ -351,5 +365,6 @@
         private System.Windows.Forms.ComboBox cbStopBits;
         private System.Windows.Forms.CheckBox chkAddLF;
         private System.Windows.Forms.CheckBox chkAddCR;
+        private System.Windows.Forms.CheckBox chkAsciiMode;
     }
 }

@@ -16,6 +16,7 @@ namespace SPClient
     {
         private SerialPort serialPort;
         private bool isPortOpen = false;
+        private bool isAsciiMode = false; // 添加ASCII模式标志
         private List<byte> receiveBuffer = new List<byte>(); // 接收缓冲区
         private System.Timers.Timer packetTimer; // 数据包超时定时器
         private const int PACKET_TIMEOUT = 50; // 包超时时间（毫秒）
@@ -29,6 +30,9 @@ namespace SPClient
             InitializeParities();
             InitializeStopBits();
 
+            // 默认为十六进制模式
+            isAsciiMode = false;
+
             // 初始化数据包超时定时器
             packetTimer = new System.Timers.Timer();
             packetTimer.Interval = PACKET_TIMEOUT;
@@ -37,10 +41,56 @@ namespace SPClient
         }
 
         // 串口信息类
-        
+        public class COMPortInfo
+        {
+            public string Name { get; set; }        // COM端口名称
+            public string Description { get; set; } // 友好名称
+
+            public override string ToString()
+            {
+                return $"{Name} - {Description}";
+            }
+
+            // 获取串口信息列表
+            public static List<COMPortInfo> GetCOMPortsInfo()
+            {
+                List<COMPortInfo> comPortInfoList = new List<COMPortInfo>();
+
+                try
+                {
+                    // 使用WMI获取串口信息
+                    using (ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT * FROM Win32_PnPEntity WHERE Name LIKE '%COM%'"))
+                    {
+                        foreach (ManagementObject obj in searcher.Get())
+                        {
+                            string caption = obj["Caption"]?.ToString() ?? string.Empty;
+                            if (caption.Contains("(COM"))
+                            {
+                                COMPortInfo comPortInfo = new COMPortInfo();
+                                
+                                // 从描述中提取COM端口名称，如"COM1"
+                                int startIndex = caption.IndexOf("(COM") + 1;
+                                int endIndex = caption.IndexOf(")", startIndex);
+                                if (startIndex > 0 && endIndex > startIndex)
+                                {
+                                    comPortInfo.Name = caption.Substring(startIndex, endIndex - startIndex);
+                                    comPortInfo.Description = caption.Replace("(" + comPortInfo.Name + ")", "").Trim();
+                                    comPortInfoList.Add(comPortInfo);
+                                }
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                    // 如果WMI失败，返回空列表
+                }
+
+                return comPortInfoList;
+            }
+        }
 
         // 获取串口信息列表
-       
         private void InitializeSerialPorts()
         {
             cbPortName.Items.Clear();
@@ -245,13 +295,23 @@ namespace SPClient
 
             if (packetData.Length > 0)
             {
-                // 转换为十六进制字符串格式
-                string hexString = BitConverter.ToString(packetData).Replace("-", " ");
+                string displayText;
+                
+                if (isAsciiMode)
+                {
+                    // ASCII模式 - 转换为ASCII文本
+                    displayText = Encoding.ASCII.GetString(packetData);
+                }
+                else
+                {
+                    // 十六进制模式 - 转换为十六进制字符串格式
+                    displayText = BitConverter.ToString(packetData).Replace("-", " ");
+                }
 
                 // 使用Invoke在UI线程中更新控件
                 this.Invoke(new Action(() =>
                 {
-                    txtReceived.AppendText($"{DateTime.Now:HH:mm:ss} 接收: " + Environment.NewLine + hexString + Environment.NewLine + Environment.NewLine);
+                    txtReceived.AppendText($"{DateTime.Now:HH:mm:ss} 接收: " + Environment.NewLine + displayText + Environment.NewLine + Environment.NewLine);
                 }));
             }
         }
@@ -266,20 +326,30 @@ namespace SPClient
 
             try
             {
-                string hexText = txtSend.Text.Trim();
-                if (string.IsNullOrEmpty(hexText))
+                string inputText = txtSend.Text.Trim();
+                if (string.IsNullOrEmpty(inputText))
                 {
                     MessageBox.Show("请输入要发送的数据", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
 
-                // 解析十六进制字符串
-                string[] hexValues = hexText.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                byte[] data = new byte[hexValues.Length];
-
-                for (int i = 0; i < hexValues.Length; i++)
+                byte[] data;
+                
+                if (isAsciiMode)
                 {
-                    data[i] = Convert.ToByte(hexValues[i], 16);
+                    // ASCII模式 - 直接将输入文本转换为ASCII字节
+                    data = Encoding.ASCII.GetBytes(inputText);
+                }
+                else
+                {
+                    // 十六进制模式 - 解析十六进制字符串
+                    string[] hexValues = inputText.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    data = new byte[hexValues.Length];
+
+                    for (int i = 0; i < hexValues.Length; i++)
+                    {
+                        data[i] = Convert.ToByte(hexValues[i], 16);
+                    }
                 }
 
                 // 准备要发送的数据
@@ -305,9 +375,17 @@ namespace SPClient
 
                     serialPort.Write(dataToSend, 0, dataToSend.Length);
 
-                    // 显示带CRC的完整数据
-                    string sentData = BitConverter.ToString(dataToSend).Replace("-", " ");
-                    txtReceived.AppendText($"{DateTime.Now:HH:mm:ss} 发送: " + Environment.NewLine + sentData + Environment.NewLine + Environment.NewLine );
+                    // 显示发送的数据
+                    string sentData;
+                    if (isAsciiMode)
+                    {
+                        sentData = Encoding.ASCII.GetString(dataToSend);
+                    }
+                    else
+                    {
+                        sentData = BitConverter.ToString(dataToSend).Replace("-", " ");
+                    }
+                    txtReceived.AppendText($"{DateTime.Now:HH:mm:ss} 发送: " + Environment.NewLine + sentData + Environment.NewLine + Environment.NewLine);
                 }
                 else
                 {
@@ -326,7 +404,15 @@ namespace SPClient
                     serialPort.Write(dataToSend, 0, dataToSend.Length);
 
                     // 显示发送的数据
-                    string sentData = BitConverter.ToString(dataToSend).Replace("-", " ");
+                    string sentData;
+                    if (isAsciiMode)
+                    {
+                        sentData = Encoding.ASCII.GetString(dataToSend);
+                    }
+                    else
+                    {
+                        sentData = BitConverter.ToString(dataToSend).Replace("-", " ");
+                    }
                     txtReceived.AppendText($"{DateTime.Now:HH:mm:ss} 发送: " + Environment.NewLine + sentData + Environment.NewLine + Environment.NewLine);
                 }
             }
@@ -404,6 +490,23 @@ namespace SPClient
                 packetTimer.Stop();
                 serialPort.Close();
                 serialPort.Dispose();
+            }
+        }
+
+        // 切换ASCII模式和十六进制模式
+        private void chkAsciiMode_CheckedChanged(object sender, EventArgs e)
+        {
+            isAsciiMode = chkAsciiMode.Checked;
+            
+            if (isAsciiMode)
+            {
+                // ASCII模式提示
+                MessageBox.Show("已切换到ASCII模式，请直接输入ASCII文本", "模式切换", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                // 十六进制模式提示
+                MessageBox.Show("已切换到十六进制模式，请输入十六进制数据，以空格分隔 (例如: 01 02 03)", "模式切换", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
     }
