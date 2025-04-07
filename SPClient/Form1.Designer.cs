@@ -266,7 +266,7 @@
             // chkAsciiReceive
             // 
             this.chkAsciiReceive.AutoSize = true;
-            this.chkAsciiReceive.Location = new System.Drawing.Point(598, 107);
+            this.chkAsciiReceive.Location = new System.Drawing.Point(575, 107);
             this.chkAsciiReceive.Name = "chkAsciiReceive";
             this.chkAsciiReceive.Size = new System.Drawing.Size(99, 24);
             this.chkAsciiReceive.TabIndex = 6;
@@ -289,10 +289,10 @@
             // txtSend
             // 
             this.txtSend.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtSend.Location = new System.Drawing.Point(6, 21);
+            this.txtSend.Location = new System.Drawing.Point(6, 50);
             this.txtSend.Multiline = true;
             this.txtSend.Name = "txtSend";
-            this.txtSend.Size = new System.Drawing.Size(1103, 80);
+            this.txtSend.Size = new System.Drawing.Size(1103, 51);
             this.txtSend.TabIndex = 0;
 
             // 
@@ -340,7 +340,6 @@
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Font = new System.Drawing.Font("Microsoft YaHei UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
             this.Margin = new System.Windows.Forms.Padding(4);
             this.MinimumSize = new System.Drawing.Size(800, 600);
             this.Name = "Form1";

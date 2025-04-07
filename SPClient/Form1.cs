@@ -9,9 +9,14 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Management; // 添加引用以使用WMI
+using System.IO; // 添加文件操作引用
+using System.Xml.Serialization; // 添加XML序列化引用
+using SPClient.Models;
+
 
 namespace SPClient
 {
+
     public partial class Form1 : Form
     {
         private SerialPort serialPort;
@@ -21,6 +26,12 @@ namespace SPClient
         private List<byte> receiveBuffer = new List<byte>(); // 接收缓冲区
         private System.Timers.Timer packetTimer; // 数据包超时定时器
         private const int PACKET_TIMEOUT = 50; // 包超时时间（毫秒）
+        
+        // 快捷指令列表
+        private List<CommandShortcut> commandShortcuts = new List<CommandShortcut>();
+        private string shortcutsFilePath = Path.Combine(Application.StartupPath, "commands.xml");
+        // 添加快捷指令按钮
+        private Button btnShortcuts;
 
         public Form1()
         {
@@ -43,6 +54,132 @@ namespace SPClient
             
             // 初始化窗体布局
             this.Load += (s, e) => Form1_Resize(this, EventArgs.Empty);
+            
+            // 初始化快捷指令按钮
+            InitializeShortcutsButton();
+            
+            // 加载快捷指令
+            LoadCommandShortcuts();
+        }
+
+        // 初始化快捷指令按钮
+        private void InitializeShortcutsButton()
+        {
+            btnShortcuts = new Button();
+            btnShortcuts.Text = "快捷指令";
+            btnShortcuts.Width = 80;
+            btnShortcuts.Height = 25;
+            btnShortcuts.Click += btnShortcuts_Click;
+            
+            // 将按钮添加到groupBox2(发送数据)中
+            groupBox2.Controls.Add(btnShortcuts);
+            // 设置按钮位置在groupBox2的顶部
+            btnShortcuts.Location = new Point(10, 20);
+            
+            // 调整txtSend的位置，给按钮留出空间
+            txtSend.Location = new Point(txtSend.Location.X, btnShortcuts.Bottom + 10);
+        }
+
+        // 快捷指令按钮点击事件
+        private void btnShortcuts_Click(object sender, EventArgs e)
+        {
+            using (ShortcutForm shortcutForm = new ShortcutForm(commandShortcuts))
+            {
+                if (shortcutForm.ShowDialog() == DialogResult.OK)
+                {
+                    // 更新快捷指令列表
+                    commandShortcuts = shortcutForm.CommandShortcuts;
+                    SaveCommandShortcuts();
+                    
+                    // 如果有选中的快捷指令，则填入发送框
+                    if (shortcutForm.SelectedShortcut != null)
+                    {
+                        CommandShortcut selectedShortcut = shortcutForm.SelectedShortcut;
+                        
+                        // 应用快捷指令设置
+                        txtSend.Text = selectedShortcut.Command;
+                        
+                        // 设置发送模式和选项
+                        isAsciiSend = selectedShortcut.IsAsciiMode;
+                        chkAsciiSend.Checked = selectedShortcut.IsAsciiMode;
+                        chkAddCRC.Checked = selectedShortcut.AddCRC;
+                        chkAddCR.Checked = selectedShortcut.AddCR;
+                        chkAddLF.Checked = selectedShortcut.AddLF;
+                    }
+                }
+            }
+        }
+
+        // 加载快捷指令
+        private void LoadCommandShortcuts()
+        {
+            try
+            {
+                if (File.Exists(shortcutsFilePath))
+                {
+                    using (FileStream fs = new FileStream(shortcutsFilePath, FileMode.Open))
+                    {
+                        XmlSerializer serializer = new XmlSerializer(typeof(List<CommandShortcut>));
+                        commandShortcuts = (List<CommandShortcut>)serializer.Deserialize(fs);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("加载快捷指令失败: " + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        // 保存快捷指令
+        private void SaveCommandShortcuts()
+        {
+            try
+            {
+                using (FileStream fs = new FileStream(shortcutsFilePath, FileMode.Create))
+                {
+                    XmlSerializer serializer = new XmlSerializer(typeof(List<CommandShortcut>));
+                    serializer.Serialize(fs, commandShortcuts);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("保存快捷指令失败: " + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        
+        // 处理窗体大小变化的事件
+        private void Form1_Resize(object sender, EventArgs e)
+        {
+            // 调整控件尺寸以适应窗体大小
+            // 获取窗体的工作区域宽度
+            int formWidth = this.ClientSize.Width;
+            int formHeight = this.ClientSize.Height;
+            
+            // 调整分组框的宽度
+            groupBox1.Width = formWidth - 24; // 左右各留12像素边距
+            groupBox2.Width = formWidth - 24;
+            groupBox3.Width = formWidth - 24;
+            
+            // 调整txtSend输入框的宽度
+            txtSend.Width = groupBox2.Width - 218; // 保留发送按钮、快捷指令按钮和左右边距
+            
+            // 调整txtReceived的宽度和高度
+            txtReceived.Width = groupBox3.Width - 138; // 保留清除按钮和左右边距
+            
+            // 调整groupBox3(消息面板)的高度
+            groupBox3.Height = formHeight - groupBox1.Height - groupBox2.Height - 48; // 减去其他控件高度和间距
+            
+            // 调整txtReceived的高度
+            txtReceived.Height = groupBox3.Height - 41; // 减去groupBox标题和边距
+            
+            // 调整按钮位置
+            btnOpenClose.Left = groupBox1.Width - btnOpenClose.Width - 6;
+            btnSend.Left = groupBox2.Width - btnSend.Width - 6;
+            btnClearReceived.Left = groupBox3.Width - btnClearReceived.Width - 6;
+            
+            // 调整快捷指令按钮位置 - 移除此处的按钮位置设置，因为按钮现在在groupBox2内部
+            // btnShortcuts.Left = txtSend.Right + 6;
+            // btnShortcuts.Top = txtSend.Top;
         }
 
         // 串口信息类
@@ -504,37 +641,6 @@ namespace SPClient
                 serialPort.Close();
                 serialPort.Dispose();
             }
-        }
-
-        // 处理窗体大小变化的事件
-        private void Form1_Resize(object sender, EventArgs e)
-        {
-            // 调整控件尺寸以适应窗体大小
-            // 获取窗体的工作区域宽度
-            int formWidth = this.ClientSize.Width;
-            int formHeight = this.ClientSize.Height;
-            
-            // 调整分组框的宽度
-            groupBox1.Width = formWidth - 24; // 左右各留12像素边距
-            groupBox2.Width = formWidth - 24;
-            groupBox3.Width = formWidth - 24;
-            
-            // 调整txtSend输入框的宽度
-            txtSend.Width = groupBox2.Width - 138; // 保留发送按钮和左右边距
-            
-            // 调整txtReceived的宽度和高度
-            txtReceived.Width = groupBox3.Width - 138; // 保留清除按钮和左右边距
-            
-            // 调整groupBox3(消息面板)的高度
-            groupBox3.Height = formHeight - groupBox1.Height - groupBox2.Height - 48; // 减去其他控件高度和间距
-            
-            // 调整txtReceived的高度
-            txtReceived.Height = groupBox3.Height - 41; // 减去groupBox标题和边距
-            
-            // 调整按钮位置
-            btnOpenClose.Left = groupBox1.Width - btnOpenClose.Width - 6;
-            btnSend.Left = groupBox2.Width - btnSend.Width - 6;
-            btnClearReceived.Left = groupBox3.Width - btnClearReceived.Width - 6;
         }
 
         // 切换ASCII发送模式
