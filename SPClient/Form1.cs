@@ -27,11 +27,13 @@ namespace SPClient
         private System.Timers.Timer packetTimer; // 数据包超时定时器
         private const int PACKET_TIMEOUT = 50; // 包超时时间（毫秒）
         
+        // 定时发送相关变量
+        private System.Windows.Forms.Timer timerSend; // 定时发送定时器
+        private bool isTimedSendEnabled = false; // 定时发送状态
+        
         // 快捷指令列表
         private List<CommandShortcut> commandShortcuts = new List<CommandShortcut>();
         private string shortcutsFilePath = Path.Combine(Application.StartupPath, "commands.xml");
-        // 添加快捷指令按钮
-        private Button btnShortcuts;
 
         public Form1()
         {
@@ -55,29 +57,74 @@ namespace SPClient
             // 初始化窗体布局
             this.Load += (s, e) => Form1_Resize(this, EventArgs.Empty);
             
-            // 初始化快捷指令按钮
-            InitializeShortcutsButton();
+            // 初始化定时发送功能
+            InitializeTimedSendFeature();
+            
+            // 调整txtSend的位置，给按钮留出空间
+            txtSend.Location = new Point(txtSend.Location.X, btnShortcuts.Bottom + 10);
             
             // 加载快捷指令
             LoadCommandShortcuts();
         }
 
-        // 初始化快捷指令按钮
-        private void InitializeShortcutsButton()
+        // 初始化定时发送功能
+        private void InitializeTimedSendFeature()
         {
-            btnShortcuts = new Button();
-            btnShortcuts.Text = "快捷指令";
-            btnShortcuts.Width = 80;
-            btnShortcuts.Height = 25;
-            btnShortcuts.Click += btnShortcuts_Click;
+            // 初始化定时器
+            timerSend = new System.Windows.Forms.Timer();
+            timerSend.Tick += TimerSend_Tick;
+        }
+        
+        // 定时发送按钮点击事件
+        private void btnTimedSend_Click(object sender, EventArgs e)
+        {
+            if (!isTimedSendEnabled)
+            {
+                if (!isPortOpen)
+                {
+                    MessageBox.Show("请先打开串口", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+                
+                if (string.IsNullOrEmpty(txtSend.Text.Trim()))
+                {
+                    MessageBox.Show("请输入要发送的数据", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+                
+                // 开始定时发送
+                timerSend.Interval = (int)numTimerInterval.Value;
+                timerSend.Start();
+                isTimedSendEnabled = true;
+                btnTimedSend.Text = "停止发送";
+                numTimerInterval.Enabled = false;
+            }
+            else
+            {
+                // 停止定时发送
+                timerSend.Stop();
+                isTimedSendEnabled = false;
+                btnTimedSend.Text = "定时发送";
+                numTimerInterval.Enabled = true;
+            }
+        }
+        
+        // 定时器触发事件
+        private void TimerSend_Tick(object sender, EventArgs e)
+        {
+            // 检查串口是否仍然打开
+            if (!isPortOpen || serialPort == null)
+            {
+                timerSend.Stop();
+                isTimedSendEnabled = false;
+                btnTimedSend.Text = "定时发送";
+                numTimerInterval.Enabled = true;
+                MessageBox.Show("串口已关闭，定时发送已停止", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
             
-            // 将按钮添加到groupBox2(发送数据)中
-            groupBox2.Controls.Add(btnShortcuts);
-            // 设置按钮位置在groupBox2的顶部
-            btnShortcuts.Location = new Point(10, 20);
-            
-            // 调整txtSend的位置，给按钮留出空间
-            txtSend.Location = new Point(txtSend.Location.X, btnShortcuts.Bottom + 10);
+            // 调用发送方法
+            btnSend_Click(sender, e);
         }
 
         // 快捷指令按钮点击事件
@@ -110,43 +157,6 @@ namespace SPClient
             }
         }
 
-        // 加载快捷指令
-        private void LoadCommandShortcuts()
-        {
-            try
-            {
-                if (File.Exists(shortcutsFilePath))
-                {
-                    using (FileStream fs = new FileStream(shortcutsFilePath, FileMode.Open))
-                    {
-                        XmlSerializer serializer = new XmlSerializer(typeof(List<CommandShortcut>));
-                        commandShortcuts = (List<CommandShortcut>)serializer.Deserialize(fs);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("加载快捷指令失败: " + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        // 保存快捷指令
-        private void SaveCommandShortcuts()
-        {
-            try
-            {
-                using (FileStream fs = new FileStream(shortcutsFilePath, FileMode.Create))
-                {
-                    XmlSerializer serializer = new XmlSerializer(typeof(List<CommandShortcut>));
-                    serializer.Serialize(fs, commandShortcuts);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("保存快捷指令失败: " + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-        
         // 处理窗体大小变化的事件
         private void Form1_Resize(object sender, EventArgs e)
         {
@@ -177,9 +187,16 @@ namespace SPClient
             btnSend.Left = groupBox2.Width - btnSend.Width - 6;
             btnClearReceived.Left = groupBox3.Width - btnClearReceived.Width - 6;
             
-            // 调整快捷指令按钮位置 - 移除此处的按钮位置设置，因为按钮现在在groupBox2内部
-            // btnShortcuts.Left = txtSend.Right + 6;
-            // btnShortcuts.Top = txtSend.Top;
+            // 调整定时发送和快捷指令按钮位置
+            if (btnTimedSend != null && btnShortcuts != null)
+            {
+                btnTimedSend.Location = new Point(btnShortcuts.Right + 10, btnShortcuts.Top);
+                if (lblInterval != null && numTimerInterval != null)
+                {
+                    lblInterval.Location = new Point(btnTimedSend.Right + 10, btnTimedSend.Top + 5);
+                    numTimerInterval.Location = new Point(lblInterval.Right + 5, btnTimedSend.Top);
+                }
+            }
         }
 
         // 串口信息类
@@ -638,6 +655,13 @@ namespace SPClient
             if (serialPort != null && serialPort.IsOpen)
             {
                 packetTimer.Stop();
+                
+                // 停止定时发送
+                if (timerSend != null && timerSend.Enabled)
+                {
+                    timerSend.Stop();
+                }
+                
                 serialPort.Close();
                 serialPort.Dispose();
             }
@@ -664,6 +688,43 @@ namespace SPClient
         private void chkAsciiReceive_CheckedChanged(object sender, EventArgs e)
         {
             isAsciiReceive = chkAsciiReceive.Checked;
+        }
+
+        // 加载快捷指令
+        private void LoadCommandShortcuts()
+        {
+            try
+            {
+                if (File.Exists(shortcutsFilePath))
+                {
+                    using (FileStream fs = new FileStream(shortcutsFilePath, FileMode.Open))
+                    {
+                        XmlSerializer serializer = new XmlSerializer(typeof(List<CommandShortcut>));
+                        commandShortcuts = (List<CommandShortcut>)serializer.Deserialize(fs);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("加载快捷指令失败: " + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        // 保存快捷指令
+        private void SaveCommandShortcuts()
+        {
+            try
+            {
+                using (FileStream fs = new FileStream(shortcutsFilePath, FileMode.Create))
+                {
+                    XmlSerializer serializer = new XmlSerializer(typeof(List<CommandShortcut>));
+                    serializer.Serialize(fs, commandShortcuts);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("保存快捷指令失败: " + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 }

@@ -41,6 +41,10 @@
             this.cbPortName = new System.Windows.Forms.ComboBox();
             this.btnOpenClose = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.btnShortcuts = new System.Windows.Forms.Button();
+            this.btnTimedSend = new System.Windows.Forms.Button();
+            this.lblInterval = new System.Windows.Forms.Label();
+            this.numTimerInterval = new System.Windows.Forms.NumericUpDown();
             this.chkAddLF = new System.Windows.Forms.CheckBox();
             this.chkAddCR = new System.Windows.Forms.CheckBox();
             this.chkAddCRC = new System.Windows.Forms.CheckBox();
@@ -203,6 +207,10 @@
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.btnShortcuts);
+            this.groupBox2.Controls.Add(this.numTimerInterval);
+            this.groupBox2.Controls.Add(this.lblInterval);
+            this.groupBox2.Controls.Add(this.btnTimedSend);
             this.groupBox2.Controls.Add(this.chkAddLF);
             this.groupBox2.Controls.Add(this.chkAddCR);
             this.groupBox2.Controls.Add(this.chkAddCRC);
@@ -216,6 +224,61 @@
             this.groupBox2.TabIndex = 1;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "发送数据";
+
+            // 
+            // btnShortcuts
+            // 
+            this.btnShortcuts.Location = new System.Drawing.Point(10, 21);
+            this.btnShortcuts.Name = "btnShortcuts";
+            this.btnShortcuts.Size = new System.Drawing.Size(80, 25);
+            this.btnShortcuts.TabIndex = 10;
+            this.btnShortcuts.Text = "快捷指令";
+            this.btnShortcuts.UseVisualStyleBackColor = true;
+            this.btnShortcuts.Click += new System.EventHandler(this.btnShortcuts_Click);
+
+            // 
+            // btnTimedSend
+            // 
+            this.btnTimedSend.Location = new System.Drawing.Point(96, 21);
+            this.btnTimedSend.Name = "btnTimedSend";
+            this.btnTimedSend.Size = new System.Drawing.Size(80, 25);
+            this.btnTimedSend.TabIndex = 7;
+            this.btnTimedSend.Text = "定时发送";
+            this.btnTimedSend.UseVisualStyleBackColor = true;
+            this.btnTimedSend.Click += new System.EventHandler(this.btnTimedSend_Click);
+
+            // 
+            // lblInterval
+            // 
+            this.lblInterval.AutoSize = true;
+            this.lblInterval.Location = new System.Drawing.Point(182, 25);
+            this.lblInterval.Name = "lblInterval";
+            this.lblInterval.Size = new System.Drawing.Size(79, 20);
+            this.lblInterval.TabIndex = 8;
+            this.lblInterval.Text = "间隔(ms):";
+
+            // 
+            // numTimerInterval
+            // 
+            this.numTimerInterval.Location = new System.Drawing.Point(267, 21);
+            this.numTimerInterval.Maximum = new decimal(new int[] {
+            60000,
+            0,
+            0,
+            0});
+            this.numTimerInterval.Minimum = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
+            this.numTimerInterval.Name = "numTimerInterval";
+            this.numTimerInterval.Size = new System.Drawing.Size(60, 25);
+            this.numTimerInterval.TabIndex = 9;
+            this.numTimerInterval.Value = new decimal(new int[] {
+            1000,
+            0,
+            0,
+            0});
 
             // 
             // chkAddLF
@@ -371,8 +434,8 @@
         private System.Windows.Forms.Button btnSend;
         private System.Windows.Forms.CheckBox chkAddCRC;
         private System.Windows.Forms.GroupBox groupBox3;
-        private System.Windows.Forms.TextBox txtReceived;
         private System.Windows.Forms.Button btnClearReceived;
+        private System.Windows.Forms.TextBox txtReceived;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.ComboBox cbParity;
         private System.Windows.Forms.Label label5;
@@ -381,5 +444,9 @@
         private System.Windows.Forms.CheckBox chkAddCR;
         private System.Windows.Forms.CheckBox chkAsciiSend;
         private System.Windows.Forms.CheckBox chkAsciiReceive;
+        private System.Windows.Forms.Button btnTimedSend;
+        private System.Windows.Forms.Label lblInterval;
+        private System.Windows.Forms.NumericUpDown numTimerInterval;
+        private System.Windows.Forms.Button btnShortcuts;
     }
 }
